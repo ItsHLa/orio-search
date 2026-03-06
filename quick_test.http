@@ -1,0 +1,387 @@
+### ============================================
+### OrioSearch API - REST Client Tests
+### ============================================
+### Requires VS Code extension: REST Client (humao.rest-client)
+### Start the stack first: docker compose up --build
+
+@baseUrl = http://localhost:8000
+@apiKey = your-secret-key-here
+
+
+### ============================================
+### Health & Info
+### ============================================
+
+### Health Check
+GET {{baseUrl}}/health
+
+###
+
+### OpenAPI Docs (Swagger)
+GET {{baseUrl}}/docs
+
+###
+
+### LLM Tool Schema (OpenAI function-calling format)
+GET {{baseUrl}}/tool-schema
+
+###
+
+
+### ============================================
+### SEARCH - Basic
+### ============================================
+
+### Basic search (fast, snippets only)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "python fastapi tutorial",
+  "max_results": 5
+}
+
+###
+
+### Search with topic = news
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "artificial intelligence",
+  "topic": "news",
+  "max_results": 5
+}
+
+###
+
+### Search with time range filter
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "latest python release",
+  "time_range": "week",
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
+### SEARCH - Advanced (with content extraction)
+### ============================================
+
+### Advanced search - fetches and extracts full page content
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "how to use docker compose",
+  "search_depth": "advanced",
+  "max_results": 3
+}
+
+###
+
+### Search with include_raw_content
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "redis caching best practices",
+  "include_raw_content": true,
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
+### SEARCH - Images
+### ============================================
+
+### Search with images
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "cute cats",
+  "include_images": true,
+  "max_results": 5
+}
+
+###
+
+### Advanced search with images
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "machine learning architecture diagrams",
+  "search_depth": "advanced",
+  "include_images": true,
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
+### SEARCH - Domain Filters
+### ============================================
+
+### Include only specific domains
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "python async",
+  "include_domains": ["docs.python.org", "realpython.com"],
+  "max_results": 5
+}
+
+###
+
+### Exclude specific domains
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "javascript frameworks 2025",
+  "exclude_domains": ["medium.com", "w3schools.com"],
+  "max_results": 5
+}
+
+###
+
+
+### ============================================
+### SEARCH - Full featured
+### ============================================
+
+### Everything combined
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "self hosted search engine",
+  "search_depth": "advanced",
+  "topic": "general",
+  "max_results": 5,
+  "include_raw_content": true,
+  "include_images": true,
+  "exclude_domains": ["pinterest.com"],
+  "time_range": "month"
+}
+
+###
+
+
+### ============================================
+### SEARCH - SSE Streaming
+### ============================================
+
+### Stream search results (Server-Sent Events)
+POST {{baseUrl}}/search/stream
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "query": "python async programming",
+  "max_results": 3
+}
+
+###
+
+### Stream advanced search with extraction
+POST {{baseUrl}}/search/stream
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "query": "fastapi best practices",
+  "search_depth": "advanced",
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
+### EXTRACT - Content extraction
+### ============================================
+
+### Extract single URL
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": ["https://example.com"]
+}
+
+###
+
+### Extract multiple URLs (tests Redis pipeline batching)
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": [
+    "https://docs.python.org/3/library/asyncio.html",
+    "https://fastapi.tiangolo.com/",
+    "https://httpd.apache.org/"
+  ],
+  "format": "markdown"
+}
+
+###
+
+### Extract with text format
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": [
+    "https://en.wikipedia.org/wiki/Web_scraping"
+  ],
+  "format": "text"
+}
+
+###
+
+### Extract - test error handling (bad URL)
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": [
+    "https://example.com",
+    "https://thisdomaindoesnotexist12345.com/page"
+  ]
+}
+
+###
+
+
+### ============================================
+### AUTH - API Key Authentication
+### ============================================
+### (Enable auth in config.yaml first:
+###   auth:
+###     enabled: true
+###     api_keys: ["your-secret-key-here"]
+### )
+
+### Search with API key (should succeed when auth enabled)
+POST {{baseUrl}}/search
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+
+{
+  "query": "test auth",
+  "max_results": 3
+}
+
+###
+
+### Search without API key (should return 401 when auth enabled)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test no auth",
+  "max_results": 3
+}
+
+###
+
+### Search with invalid API key (should return 403 when auth enabled)
+POST {{baseUrl}}/search
+Content-Type: application/json
+Authorization: Bearer invalid-key-here
+
+{
+  "query": "test bad auth",
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
+### Edge cases & error handling
+### ============================================
+
+### Missing query field (should return 422)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "max_results": 5
+}
+
+###
+
+### max_results out of range (should return 422)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test",
+  "max_results": 50
+}
+
+###
+
+### Extract with no URLs (should return 422)
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": []
+}
+
+###
+
+### Extract with too many URLs (should return 422, max 20)
+POST {{baseUrl}}/extract
+Content-Type: application/json
+
+{
+  "urls": [
+    "https://example.com/1", "https://example.com/2", "https://example.com/3",
+    "https://example.com/4", "https://example.com/5", "https://example.com/6",
+    "https://example.com/7", "https://example.com/8", "https://example.com/9",
+    "https://example.com/10", "https://example.com/11", "https://example.com/12",
+    "https://example.com/13", "https://example.com/14", "https://example.com/15",
+    "https://example.com/16", "https://example.com/17", "https://example.com/18",
+    "https://example.com/19", "https://example.com/20", "https://example.com/21"
+  ]
+}
+
+###
+
+
+### ============================================
+### Verify X-Request-ID header
+### ============================================
+
+### Check that response includes X-Request-ID
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "request id test",
+  "max_results": 1
+}
+
+### Pass custom request ID
+POST {{baseUrl}}/search
+Content-Type: application/json
+X-Request-ID: my-custom-trace-id-123
+
+{
+  "query": "custom trace id test",
+  "max_results": 1
+}
