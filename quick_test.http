@@ -17,8 +17,8 @@ GET {{baseUrl}}/health
 
 ###
 
-### OpenAPI Docs (Swagger)
-GET {{baseUrl}}/docs
+### OpenAPI JSON spec
+GET {{baseUrl}}/openapi.json
 
 ###
 
@@ -67,6 +67,16 @@ Content-Type: application/json
 
 ###
 
+### Minimal search (just query, all defaults)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "what is docker"
+}
+
+###
+
 
 ### ============================================
 ### SEARCH - Advanced (with content extraction)
@@ -84,14 +94,14 @@ Content-Type: application/json
 
 ###
 
-### Search with include_raw_content
+### Search with include_raw_content (basic depth + extracted content)
 POST {{baseUrl}}/search
 Content-Type: application/json
 
 {
   "query": "redis caching best practices",
   "include_raw_content": true,
-  "max_results": 3
+  "max_results": 2
 }
 
 ###
@@ -113,7 +123,7 @@ Content-Type: application/json
 
 ###
 
-### Advanced search with images
+### Advanced search with images and extraction
 POST {{baseUrl}}/search
 Content-Type: application/json
 
@@ -148,7 +158,7 @@ POST {{baseUrl}}/search
 Content-Type: application/json
 
 {
-  "query": "javascript frameworks 2025",
+  "query": "javascript frameworks 2026",
   "exclude_domains": ["medium.com", "w3schools.com"],
   "max_results": 5
 }
@@ -157,7 +167,7 @@ Content-Type: application/json
 
 
 ### ============================================
-### SEARCH - Full featured
+### SEARCH - Full featured (all params)
 ### ============================================
 
 ### Everything combined
@@ -181,14 +191,29 @@ Content-Type: application/json
 ### ============================================
 ### SEARCH - SSE Streaming
 ### ============================================
+### Note: REST Client shows raw SSE text.
+### Events: result, image, extraction, done, error
 
-### Stream search results (Server-Sent Events)
+### Stream basic search results
 POST {{baseUrl}}/search/stream
 Content-Type: application/json
 Accept: text/event-stream
 
 {
   "query": "python async programming",
+  "max_results": 3
+}
+
+###
+
+### Stream with images
+POST {{baseUrl}}/search/stream
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "query": "cute cats",
+  "include_images": true,
   "max_results": 3
 }
 
@@ -202,7 +227,7 @@ Accept: text/event-stream
 {
   "query": "fastapi best practices",
   "search_depth": "advanced",
-  "max_results": 3
+  "max_results": 2
 }
 
 ###
@@ -212,12 +237,12 @@ Accept: text/event-stream
 ### EXTRACT - Content extraction
 ### ============================================
 
-### Extract single URL
+### Extract single URL (markdown format, default)
 POST {{baseUrl}}/extract
 Content-Type: application/json
 
 {
-  "urls": ["https://example.com"]
+  "urls": ["https://httpbin.org/html"]
 }
 
 ###
@@ -228,9 +253,9 @@ Content-Type: application/json
 
 {
   "urls": [
-    "https://docs.python.org/3/library/asyncio.html",
-    "https://fastapi.tiangolo.com/",
-    "https://httpd.apache.org/"
+    "https://httpbin.org/html",
+    "https://example.com",
+    "https://www.iana.org/about"
   ],
   "format": "markdown"
 }
@@ -242,22 +267,20 @@ POST {{baseUrl}}/extract
 Content-Type: application/json
 
 {
-  "urls": [
-    "https://en.wikipedia.org/wiki/Web_scraping"
-  ],
+  "urls": ["https://httpbin.org/html"],
   "format": "text"
 }
 
 ###
 
-### Extract - test error handling (bad URL)
+### Extract - mixed success and failure
 POST {{baseUrl}}/extract
 Content-Type: application/json
 
 {
   "urls": [
     "https://example.com",
-    "https://thisdomaindoesnotexist12345.com/page"
+    "https://thisdomaindoesnotexist99999.com/page"
   ]
 }
 
@@ -267,53 +290,76 @@ Content-Type: application/json
 ### ============================================
 ### AUTH - API Key Authentication
 ### ============================================
-### (Enable auth in config.yaml first:
+### Enable auth in config.yaml first:
 ###   auth:
 ###     enabled: true
 ###     api_keys: ["your-secret-key-here"]
-### )
 
-### Search with API key (should succeed when auth enabled)
+### Search with valid API key (200 when auth enabled)
 POST {{baseUrl}}/search
 Content-Type: application/json
 Authorization: Bearer {{apiKey}}
 
 {
   "query": "test auth",
-  "max_results": 3
+  "max_results": 1
 }
 
 ###
 
-### Search without API key (should return 401 when auth enabled)
+### Search without API key (401 when auth enabled)
 POST {{baseUrl}}/search
 Content-Type: application/json
 
 {
   "query": "test no auth",
-  "max_results": 3
+  "max_results": 1
 }
 
 ###
 
-### Search with invalid API key (should return 403 when auth enabled)
+### Search with invalid API key (403 when auth enabled)
 POST {{baseUrl}}/search
 Content-Type: application/json
 Authorization: Bearer invalid-key-here
 
 {
   "query": "test bad auth",
-  "max_results": 3
+  "max_results": 1
+}
+
+###
+
+### Extract with API key
+POST {{baseUrl}}/extract
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+
+{
+  "urls": ["https://example.com"]
+}
+
+###
+
+### Stream with API key
+POST {{baseUrl}}/search/stream
+Content-Type: application/json
+Authorization: Bearer {{apiKey}}
+Accept: text/event-stream
+
+{
+  "query": "auth stream test",
+  "max_results": 1
 }
 
 ###
 
 
 ### ============================================
-### Edge cases & error handling
+### Validation - Expected 422 errors
 ### ============================================
 
-### Missing query field (should return 422)
+### Missing query field
 POST {{baseUrl}}/search
 Content-Type: application/json
 
@@ -323,7 +369,7 @@ Content-Type: application/json
 
 ###
 
-### max_results out of range (should return 422)
+### max_results out of range (max 20)
 POST {{baseUrl}}/search
 Content-Type: application/json
 
@@ -334,7 +380,48 @@ Content-Type: application/json
 
 ###
 
-### Extract with no URLs (should return 422)
+### Invalid search_depth enum
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test",
+  "search_depth": "ultra"
+}
+
+###
+
+### Invalid topic enum
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test",
+  "topic": "finance"
+}
+
+###
+
+### Invalid time_range enum
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test",
+  "time_range": "century"
+}
+
+###
+
+### Empty body
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{}
+
+###
+
+### Extract with no URLs (min 1)
 POST {{baseUrl}}/extract
 Content-Type: application/json
 
@@ -344,7 +431,7 @@ Content-Type: application/json
 
 ###
 
-### Extract with too many URLs (should return 422, max 20)
+### Extract with too many URLs (max 20)
 POST {{baseUrl}}/extract
 Content-Type: application/json
 
@@ -362,26 +449,35 @@ Content-Type: application/json
 
 ###
 
-
-### ============================================
-### Verify X-Request-ID header
-### ============================================
-
-### Check that response includes X-Request-ID
-POST {{baseUrl}}/search
+### Extract with invalid format
+POST {{baseUrl}}/extract
 Content-Type: application/json
 
 {
-  "query": "request id test",
-  "max_results": 1
+  "urls": ["https://example.com"],
+  "format": "html"
 }
 
-### Pass custom request ID
+###
+
+
+### ============================================
+### Request ID tracing
+### ============================================
+
+### Auto-generated X-Request-ID (check response headers)
+GET {{baseUrl}}/health
+
+###
+
+### Custom X-Request-ID passed through
 POST {{baseUrl}}/search
 Content-Type: application/json
 X-Request-ID: my-custom-trace-id-123
 
 {
-  "query": "custom trace id test",
+  "query": "trace id test",
   "max_results": 1
 }
+
+###

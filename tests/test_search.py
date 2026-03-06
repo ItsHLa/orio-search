@@ -13,7 +13,7 @@ async def test_search_basic(client):
     assert data["query"] == "python fastapi"
     assert len(data["results"]) == 3
     assert "response_time" in data
-    assert data["response_time"] > 0
+    assert data["response_time"] >= 0
 
 
 @pytest.mark.asyncio

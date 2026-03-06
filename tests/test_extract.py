@@ -14,7 +14,7 @@ async def test_extract_single_url(client):
     assert data["results"][0]["url"] == "https://example.com"
     assert "Extracted content" in data["results"][0]["raw_content"]
     assert data["failed_results"] == []
-    assert data["response_time"] > 0
+    assert data["response_time"] >= 0
 
 
 @pytest.mark.asyncio

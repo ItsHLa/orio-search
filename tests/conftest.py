@@ -90,6 +90,15 @@ class FakeCache:
         pass
 
 
+# ---- Reset sse_starlette AppStatus across tests ----
+
+@pytest_asyncio.fixture(autouse=True)
+async def _reset_sse_app_status():
+    """Reset sse_starlette's module-level Event to the current event loop."""
+    from sse_starlette.sse import AppStatus
+    AppStatus.should_exit_event = asyncio.Event()
+
+
 # ---- App fixture ----
 
 @pytest_asyncio.fixture
