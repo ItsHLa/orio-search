@@ -234,6 +234,63 @@ Accept: text/event-stream
 
 
 ### ============================================
+### SEARCH - AI Answer Generation
+### ============================================
+### Requires LLM config enabled in config.yaml
+### Works with OpenAI, Ollama, Groq, or any OpenAI-compatible API
+
+### Search with AI answer (basic)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "what is docker and why is it useful",
+  "include_answer": true,
+  "max_results": 5
+}
+
+###
+
+### Search with AI answer + advanced depth
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "how to use docker compose",
+  "include_answer": true,
+  "search_depth": "advanced",
+  "max_results": 3
+}
+
+###
+
+### Stream with AI answer (answer_chunk + answer_done events)
+POST {{baseUrl}}/search/stream
+Content-Type: application/json
+Accept: text/event-stream
+
+{
+  "query": "python async programming best practices",
+  "include_answer": true,
+  "max_results": 3
+}
+
+###
+
+### Search without AI answer (answer field should be null)
+POST {{baseUrl}}/search
+Content-Type: application/json
+
+{
+  "query": "test no answer",
+  "include_answer": false,
+  "max_results": 3
+}
+
+###
+
+
+### ============================================
 ### EXTRACT - Content extraction
 ### ============================================
 

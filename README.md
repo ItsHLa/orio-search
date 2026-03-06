@@ -9,6 +9,7 @@ Built on **SearXNG** (meta-search) + **FastAPI** with async concurrency, Redis c
 ## Features
 
 - **Tavily-compatible API** — `/search`, `/extract`, and `/tool-schema` endpoints match Tavily's interface
+- **AI answer generation** — `include_answer: true` generates LLM-synthesized answers from search results (OpenAI, Ollama, Groq, or any OpenAI-compatible API)
 - **LLM-ready** — `/tool-schema` returns OpenAI function-calling definitions for `web_search` and `web_extract`
 - **SearXNG backend** — aggregates 70+ search engines with automatic fallback to DuckDuckGo
 - **Content extraction** — multi-tier pipeline: trafilatura (F1: 0.958) with readability-lxml fallback
@@ -47,6 +48,14 @@ This starts three services:
 | `orio-search-searxng` | 8080 | SearXNG meta-search engine |
 | `orio-search-redis` | 6379 | Redis cache |
 
+To include Ollama for AI answer generation:
+
+```bash
+docker compose --profile llm up --build
+```
+
+| `orio-search-ollama` | 11434 | Ollama LLM (optional, via `--profile llm`) |
+
 ### Verify
 
 ```bash
@@ -68,6 +77,7 @@ Search the web and return relevant results.
   "search_depth": "basic",
   "topic": "general",
   "max_results": 5,
+  "include_answer": false,
   "include_images": false,
   "include_raw_content": false,
   "time_range": "week",
@@ -82,6 +92,7 @@ Search the web and return relevant results.
 | `search_depth` | `basic` \| `advanced` | `basic` | `advanced` extracts full page content |
 | `topic` | `general` \| `news` | `general` | Search category |
 | `max_results` | 1-20 | 5 | Number of results |
+| `include_answer` | boolean | false | Generate AI answer from search results (requires LLM) |
 | `include_images` | boolean | false | Include image results |
 | `include_raw_content` | boolean | false | Include extracted page content |
 | `time_range` | `day` \| `week` \| `month` \| `year` | null | Time filter |
@@ -93,6 +104,7 @@ Search the web and return relevant results.
 ```json
 {
   "query": "python async programming",
+  "answer": "Python's asyncio module provides infrastructure for writing single-threaded concurrent code using coroutines [1]...",
   "results": [
     {
       "title": "Async IO in Python",
@@ -126,9 +138,17 @@ data: {"url": "...", "description": "..."}
 event: extraction
 data: {"url": "...", "raw_content": "..."}
 
+event: answer_chunk
+data: {"text": "Based on the search results, "}
+
+event: answer_done
+data: {}
+
 event: done
-data: {"total_results": 5, "response_time": 2.1}
+data: {"response_time": 2.1}
 ```
+
+The `answer_chunk` and `answer_done` events are only emitted when `include_answer: true` and LLM is configured.
 
 ### `POST /extract`
 
@@ -289,6 +309,45 @@ logging:
   level: "INFO"
 ```
 
+### AI Answer Generation (LLM)
+
+Disabled by default. Enable to generate AI-synthesized answers from search results when `include_answer: true` is set. Uses the OpenAI SDK, which is compatible with any OpenAI-compatible API.
+
+```yaml
+llm:
+  enabled: true
+  provider: "ollama"                       # label for logs
+  base_url: "http://ollama:11434/v1"       # any OpenAI-compatible endpoint
+  api_key: "ollama"                        # "ollama" for local, real key for cloud
+  model: "llama3.1"
+  max_tokens: 1024
+  temperature: 0.1
+  timeout: 30
+  system_prompt: "You are a helpful search assistant..."
+  max_context_results: 5                   # search results fed to LLM
+  max_context_chars: 8000                  # max context length
+  answer_ttl: 3600                         # cache TTL for answers
+```
+
+**Supported providers** — just change `base_url`, `api_key`, and `model`:
+
+| Provider | `base_url` | `model` example |
+|----------|-----------|-----------------|
+| Ollama (local) | `http://ollama:11434/v1` | `llama3.1`, `qwen3.5:9b` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
+| Groq | `https://api.groq.com/openai/v1` | `llama-3.1-70b-versatile` |
+| Together AI | `https://api.together.xyz/v1` | `meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo` |
+
+**Usage:**
+
+```bash
+curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "what is docker", "include_answer": true}'
+```
+
+When LLM is disabled or fails, the API still returns search results normally with `"answer": null` (graceful degradation).
+
 ---
 
 ## Using with LLMs
@@ -335,13 +394,16 @@ OrioSearch API (FastAPI + Gunicorn, 4 workers)
   |
   |-- /search ---------> SearXNG (70+ engines)
   |                         \--> DuckDuckGo (fallback)
+  |                         \--> LLM (AI answer, optional)
   |
   |-- /extract --------> trafilatura
   |                         \--> readability-lxml (fallback)
   |
-  |-- /search/stream ---> SSE (real-time results)
+  |-- /search/stream ---> SSE (real-time results + answer chunks)
   |
-  \-- Redis (cache, rate limiting)
+  |-- LLM provider ----> Ollama / OpenAI / Groq / any OpenAI-compatible API
+  |
+  \-- Redis (cache, rate limiting, answer cache)
 ```
 
 ### Concurrency Model
@@ -404,15 +466,16 @@ pytest tests/ -v
 │       ├── extractor.py        # Multi-tier content extraction
 │       ├── cache.py            # Redis cache with batch ops
 │       ├── reranker.py         # FlashRank reranking
+│       ├── llm.py              # LLM answer generation (OpenAI-compatible)
 │       └── resilience.py       # Circuit breakers + retry
-├── tests/                      # pytest test suite
+├── tests/                      # pytest test suite (110 tests)
 ├── searxng/
 │   └── settings.yml            # SearXNG configuration
 ├── config.yaml                 # App configuration
-├── docker-compose.yml          # 3-service stack
+├── docker-compose.yml          # 4-service stack (Ollama optional via profile)
 ├── Dockerfile                  # Production image
 ├── requirements.txt            # Python dependencies
-└── test.http                   # VS Code REST Client tests
+└── quick_test.http             # VS Code REST Client tests
 ```
 
 ---

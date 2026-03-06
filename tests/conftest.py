@@ -83,8 +83,59 @@ class FakeCache:
         for url, content in pairs:
             self._extract[url] = content
 
+    async def get_answer(self, query: str, params_hash: str) -> str | None:
+        return self._search.get(f"answer|{query}|{params_hash}")
+
+    async def set_answer(self, query: str, params_hash: str, answer: str) -> None:
+        self._search[f"answer|{query}|{params_hash}"] = answer
+
     async def connect(self) -> None:
         pass
+
+    async def close(self) -> None:
+        pass
+
+
+# ---- Fake LLM service ----
+
+class FakeLLMService:
+    """Fake LLM for testing. Returns a canned answer or simulates failure."""
+
+    def __init__(self, answer: str = "This is a test answer based on search results [1].", fail: bool = False) -> None:
+        self.answer = answer
+        self.fail = fail
+        self._client = True  # looks "enabled"
+        self.call_count = 0
+
+    async def generate_answer(self, query: str, results: list) -> str | None:
+        self.call_count += 1
+        if self.fail:
+            return None
+        return self.answer
+
+    async def generate_answer_stream(self, query: str, results: list):
+        self.call_count += 1
+        if self.fail:
+            return
+        for word in self.answer.split():
+            yield word + " "
+
+    async def close(self) -> None:
+        pass
+
+
+class DisabledLLMService:
+    """LLM service that is disabled (no client initialized)."""
+
+    def __init__(self) -> None:
+        self._client = None
+
+    async def generate_answer(self, query: str, results: list) -> str | None:
+        return None
+
+    async def generate_answer_stream(self, query: str, results: list):
+        return
+        yield  # make it an async generator
 
     async def close(self) -> None:
         pass
@@ -111,6 +162,7 @@ async def app():
     _app.state.extractor = FakeExtractor()
     _app.state.cache = FakeCache()
     _app.state.reranker = RerankerService()  # disabled by default
+    _app.state.llm = FakeLLMService()
 
     yield _app
 

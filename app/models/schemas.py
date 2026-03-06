@@ -45,7 +45,7 @@ class SearchRequest(BaseModel):
     )
     topic: Topic = Field(default=Topic.general, description="Search category")
     max_results: int = Field(default=5, ge=1, le=20, description="Number of results to return")
-    include_answer: bool = Field(default=False, description="Not implemented (reserved for LLM answer generation)")
+    include_answer: bool = Field(default=False, description="Generate an AI answer from search results (requires LLM config)")
     include_raw_content: bool = Field(default=False, description="Include full extracted page content")
     include_images: bool = Field(default=False, description="Include image search results")
     include_domains: list[str] = Field(default_factory=list, description="Only include results from these domains")
@@ -68,6 +68,7 @@ class ImageResult(BaseModel):
 
 class SearchResponse(BaseModel):
     query: str
+    answer: Optional[str] = Field(default=None, description="AI-generated answer based on search results")
     results: list[SearchResult]
     images: list[ImageResult] = Field(default_factory=list)
     response_time: float = Field(description="Total time in seconds")

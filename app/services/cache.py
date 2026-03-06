@@ -19,6 +19,7 @@ class CacheService:
         self._redis: Optional[redis.Redis] = None
         self.search_ttl = config.cache.search_ttl
         self.extract_ttl = config.cache.extract_ttl
+        self.answer_ttl = config.llm.answer_ttl
 
     async def connect(self) -> None:
         if not self.enabled:
@@ -107,6 +108,32 @@ class CacheService:
         except Exception as e:
             logger.warning("cache_batch_read_error", error=str(e))
             return {url: None for url in urls}
+
+    # --- Answer cache ---
+
+    async def get_answer(self, query: str, params_hash: str) -> Optional[str]:
+        if not self.enabled or not self._redis:
+            return None
+        key = self._hash_key("answer", f"{query}|{params_hash}")
+        try:
+            data = await self._redis.get(key)
+            if data:
+                logger.debug("cache_hit", type="answer", query=query)
+                return data
+        except Exception as e:
+            logger.warning("cache_read_error", error=str(e))
+        return None
+
+    async def set_answer(self, query: str, params_hash: str, answer: str) -> None:
+        if not self.enabled or not self._redis:
+            return
+        key = self._hash_key("answer", f"{query}|{params_hash}")
+        try:
+            await self._redis.setex(key, self.answer_ttl, answer)
+        except Exception as e:
+            logger.warning("cache_write_error", error=str(e))
+
+    # --- Extract cache (batch with pipeline) ---
 
     async def set_extract_batch(self, pairs: list[tuple[str, str]]) -> None:
         if not self.enabled or not self._redis or not pairs:

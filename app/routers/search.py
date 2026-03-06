@@ -106,9 +106,20 @@ async def _do_search(request: Request, body: SearchRequest) -> SearchResponse:
     # Images
     images = [ImageResult(url=img.url, description=img.description) for img in backend_resp.images]
 
+    # AI answer generation
+    answer = None
+    if body.include_answer:
+        llm = request.app.state.llm
+        # Check answer cache first
+        answer = await cache.get_answer(body.query, ph)
+        if answer is None:
+            answer = await llm.generate_answer(body.query, results)
+            if answer:
+                await cache.set_answer(body.query, ph, answer)
+
     elapsed = time.perf_counter() - start
     response = SearchResponse(
-        query=body.query, results=results, images=images,
+        query=body.query, answer=answer, results=results, images=images,
         response_time=round(elapsed, 3),
     )
 

@@ -73,6 +73,13 @@ async def search_stream(
                         "data": json.dumps({"url": url, "raw_content": extraction.content}),
                     }
 
+        # AI answer generation (streamed)
+        if body.include_answer:
+            llm = request.app.state.llm
+            async for chunk in llm.generate_answer_stream(body.query, results):
+                yield {"event": "answer_chunk", "data": json.dumps({"text": chunk})}
+            yield {"event": "answer_done", "data": "{}"}
+
         elapsed = time.perf_counter() - start
         yield {"event": "done", "data": json.dumps({"response_time": round(elapsed, 3)})}
 

@@ -84,6 +84,24 @@ class CorsConfig(BaseModel):
     allow_origins: list[str] = ["*"]
 
 
+class LLMConfig(BaseModel):
+    enabled: bool = False
+    provider: str = "ollama"
+    base_url: str = "http://ollama:11434/v1"
+    api_key: str = "ollama"
+    model: str = "llama3.1"
+    max_tokens: int = 1024
+    temperature: float = 0.1
+    timeout: int = 30
+    system_prompt: str = (
+        "You are a helpful search assistant. Answer the user's question concisely "
+        "based on the provided search results. Cite sources by number [1], [2], etc."
+    )
+    max_context_results: int = 5
+    max_context_chars: int = 8000
+    answer_ttl: int = 3600
+
+
 class AppConfig(BaseModel):
     server: ServerConfig = ServerConfig()
     search: SearchConfig = SearchConfig()
@@ -96,6 +114,7 @@ class AppConfig(BaseModel):
     resilience: ResilienceConfig = ResilienceConfig()
     logging: LoggingConfig = LoggingConfig()
     cors: CorsConfig = CorsConfig()
+    llm: LLMConfig = LLMConfig()
 
 
 def load_config(config_path: str | None = None) -> AppConfig:
