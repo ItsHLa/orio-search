@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OrioSearch — Open-Source Web Search API</title>
+  <meta name="description"
+    content="Self-hosted, Tavily-compatible web search and content extraction API. Deploy in 30 seconds with Docker.">
+  <meta property="og:title" content="OrioSearch — Stop Renting Your Search">
+  <meta property="og:description"
+    content="Open-source, self-hosted web search API. Tavily-compatible. Deploy in 30 seconds.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- ====== NAV ====== -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <span class="logo-icon">&#9678;</span> OrioSearch
+      </a>
+      <div class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#compare">Compare</a>
+        <a href="https://github.com/vkfolio/orio-search" class="nav-github" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          Star
+        </a>
+        <a href="#quickstart" class="btn-nav">Get Started</a>
+      </div>
+      <button class="mobile-toggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ====== HERO ====== -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span> Open Source &middot; MIT License
+    </div>
+    <h1>Stop renting your search.</h1>
+    <p class="hero-sub">
+      OrioSearch is an open-source web search and content extraction API you actually own.
+      Tavily-compatible. Deploy with Docker in 30 seconds. Zero API bills, ever.
+    </p>
+    <div class="hero-cta">
+      <a href="#quickstart" class="btn btn-primary">
+        <span class="btn-icon">$</span> docker compose up
+      </a>
+      <a href="https://github.com/vkfolio/orio-search" class="btn btn-outline" target="_blank" rel="noopener">
+        View on GitHub
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M7 17L17 7M17 7H7M17 7v10" />
+        </svg>
+      </a>
+    </div>
+
+    <!-- Terminal -->
+    <div class="terminal" id="hero-terminal">
+      <div class="terminal-chrome">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+        <span class="terminal-title">Terminal</span>
+      </div>
+      <div class="terminal-body">
+        <div class="terminal-line">
+          <span class="terminal-prompt">$</span>
+          <span class="terminal-cmd" id="typed-cmd"></span>
+          <span class="terminal-cursor" id="cursor">|</span>
+        </div>
+        <div class="terminal-output" id="terminal-output"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TRUST BAR ====== -->
+  <section class="trust-bar">
+    <div class="trust-items">
+      <div class="trust-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Self-hosted
+      </div>
+      <div class="trust-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        110 Tests Passing
+      </div>
+      <div class="trust-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="2" width="20" height="8" rx="2" />
+          <rect x="2" y="14" width="20" height="8" rx="2" />
+          <circle cx="6" cy="6" r="1" />
+          <circle cx="6" cy="18" r="1" />
+        </svg>
+        Docker Ready
+      </div>
+      <div class="trust-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path
+            d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22" />
+        </svg>
+        MIT License
+      </div>
+      <div class="trust-item">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        Tavily-compatible
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PROBLEM ====== -->
+  <section class="problem" id="problem">
+    <div class="section-inner">
+      <h2>Every AI agent needs web search.<br><span class="text-accent">Why rent it?</span></h2>
+      <div class="pain-grid">
+        <div class="pain-card">
+          <div class="pain-icon">$$$</div>
+          <h3>API bills add up fast</h3>
+          <p>Tavily charges per search. Scale your agents and watch costs explode. OrioSearch costs nothing per query.
+          </p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+          </div>
+          <h3>Your data, their servers</h3>
+          <p>Every search query you send goes through someone else's infrastructure. Self-host and keep your data where
+            it belongs.</p>
+        </div>
+        <div class="pain-card">
+          <div class="pain-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+            </svg>
+          </div>
+          <h3>Rate limits kill your agents</h3>
+          <p>Hit a rate limit mid-task and your AI agent grinds to a halt. Your server, your rules, no limits.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== THE SWAP ====== -->
+  <section class="swap" id="swap">
+    <div class="section-inner">
+      <h2>Already using Tavily?<br><span class="text-accent">Change one line.</span></h2>
+      <p class="section-sub">OrioSearch is a drop-in Tavily replacement. Same API shape, same response format. Just swap
+        the URL.</p>
+      <div class="swap-code">
+        <div class="code-block">
+          <div class="code-label code-label-before">Before</div>
+          <pre><code><span class="code-comment"># Tavily — $100+/month</span>
+<span class="code-key">base_url</span> = <span class="code-string">"https://api.tavily.com"</span>
+<span class="code-key">api_key</span>  = <span class="code-string">"tvly-xxxxxxxxxxxxxxxx"</span></code></pre>
+        </div>
+        <div class="swap-arrow">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </div>
+        <div class="code-block code-block-after">
+          <div class="code-label code-label-after">After</div>
+          <pre><code><span class="code-comment"># OrioSearch — Free forever</span>
+<span class="code-key">base_url</span> = <span class="code-string">"http://localhost:8000"</span>
+<span class="code-key">api_key</span>  = <span class="code-string">""</span>  <span class="code-comment"># optional</span></code></pre>
+        </div>
+      </div>
+      <p class="swap-note">That's it. Your existing code, your existing agents — they all just work.</p>
+    </div>
+  </section>
+
+  <!-- ====== HOW IT WORKS ====== -->
+  <section class="how-it-works" id="how-it-works">
+    <div class="section-inner">
+      <h2>Up and running in three steps.</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Deploy</h3>
+          <div class="step-code">
+            <pre><code>git clone https://github.com/vkfolio/orio-search
+cd oriosearch
+docker compose up --build</code></pre>
+          </div>
+          <p>Three services start automatically: API, SearXNG, and Redis.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>Search</h3>
+          <div class="step-code">
+            <pre><code>curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "latest AI news", "max_results": 5}'</code></pre>
+          </div>
+          <p>Get structured search results with titles, URLs, snippets, and relevance scores.</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>Extract &amp; Answer</h3>
+          <div class="step-code">
+            <pre><code>curl -X POST http://localhost:8000/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "what is docker",
+       "include_answer": true,
+       "search_depth": "advanced"}'</code></pre>
+          </div>
+          <p>Get full page content extraction and AI-generated answers with citations.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FEATURES ====== -->
+  <section class="features" id="features">
+    <div class="section-inner">
+      <h2>Everything you need.<br><span class="text-muted">Nothing you don't.</span></h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <h3>70+ Search Engines</h3>
+          <p>SearXNG aggregates results from Google, Bing, DuckDuckGo, and 70+ more. Automatic DuckDuckGo fallback if
+            SearXNG is down.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>
+          </div>
+          <h3>Content Extraction</h3>
+          <p>Multi-tier pipeline with trafilatura (F1: 0.958) and readability-lxml fallback. Get clean markdown or text
+            from any URL.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+          </div>
+          <h3>AI Answers</h3>
+          <p>Set <code>include_answer: true</code> and get LLM-synthesized answers with source citations. Works with
+            Ollama, OpenAI, Groq, or any OpenAI-compatible API.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+            </svg>
+          </div>
+          <h3>SSE Streaming</h3>
+          <p>Real-time results via Server-Sent Events. Results stream in as they arrive — no waiting for the full
+            response.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+            </svg>
+          </div>
+          <h3>Redis Caching</h3>
+          <p>Pipeline-batched lookups, configurable TTLs, stale-cache graceful degradation. Fast responses for repeated
+            queries.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <h3>Production Ready</h3>
+          <p>Circuit breakers, exponential backoff retries, per-domain rate limiting, rotating user-agents, and Gunicorn
+            with 4 workers.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="4" y1="9" x2="20" y2="9" />
+              <line x1="4" y1="15" x2="20" y2="15" />
+              <line x1="10" y1="3" x2="8" y2="21" />
+              <line x1="16" y1="3" x2="14" y2="21" />
+            </svg>
+          </div>
+          <h3>Result Reranking</h3>
+          <p>FlashRank ONNX model (~4MB, CPU-only, no PyTorch). Reranks results by semantic relevance to your query.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+          </div>
+          <h3>LLM Tool Schema</h3>
+          <p><code>GET /tool-schema</code> returns OpenAI function-calling definitions. Register OrioSearch as a tool
+            with any LLM in one call.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== ARCHITECTURE ====== -->
+  <section class="architecture" id="architecture">
+    <div class="section-inner">
+      <h2>How the pieces fit together.</h2>
+      <div class="arch-diagram">
+        <img src="./arch.png" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== COMPARISON ====== -->
+  <section class="comparison" id="compare">
+    <div class="section-inner">
+      <h2>How OrioSearch stacks up.</h2>
+      <p class="section-sub">Side-by-side with the tools you're probably paying for.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="highlight-col">OrioSearch</th>
+              <th>Tavily</th>
+              <th>Serper</th>
+              <th>Google CSE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Self-hosted</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>Open source</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>Content extraction</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="check dim-check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>AI answer generation</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="check dim-check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>SSE streaming</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>Tavily-compatible API</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="check dim-check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>LLM tool schema</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr>
+              <td>Result reranking</td>
+              <td class="highlight-col"><span class="check">&#10003;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+              <td><span class="cross">&#10005;</span></td>
+            </tr>
+            <tr class="row-price">
+              <td>Price</td>
+              <td class="highlight-col"><strong>Free</strong></td>
+              <td>From $100/mo</td>
+              <td>From $50/mo</td>
+              <td>$5/1K queries</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== AI ANSWERS ====== -->
+  <section class="ai-section" id="ai">
+    <div class="section-inner">
+      <h2>AI answers, powered by your LLM.</h2>
+      <p class="section-sub">
+        Plug in Ollama for free local inference, or use OpenAI, Groq, Together AI — any OpenAI-compatible endpoint.
+        You provide the LLM, OrioSearch does the rest.
+      </p>
+      <div class="ai-demo">
+        <div class="code-block">
+          <div class="code-label code-label-after">Response with include_answer: true</div>
+          <pre><code>{
+  <span class="code-key">"query"</span>: <span class="code-string">"what is docker"</span>,
+  <span class="code-key">"answer"</span>: <span class="code-string">"Docker is an open-source platform that automates
+    the deployment of applications inside lightweight,
+    portable containers [1]. It packages code and
+    dependencies together so applications run reliably
+    across environments [3]."</span>,
+  <span class="code-key">"results"</span>: [
+    {
+      <span class="code-key">"title"</span>: <span class="code-string">"What is Docker? | Docker Docs"</span>,
+      <span class="code-key">"url"</span>: <span class="code-string">"https://docs.docker.com/get-started/"</span>,
+      <span class="code-key">"content"</span>: <span class="code-string">"Docker is an open platform for..."</span>,
+      <span class="code-key">"score"</span>: <span class="code-num">0.95</span>
+    }
+  ],
+  <span class="code-key">"response_time"</span>: <span class="code-num">2.14</span>
+}</code></pre>
+        </div>
+        <div class="ai-config">
+          <h3>Configure in config.yaml</h3>
+          <div class="code-block">
+            <pre><code><span class="code-key">llm</span>:
+  <span class="code-key">enabled</span>: <span class="code-num">true</span>
+  <span class="code-key">provider</span>: <span class="code-string">"ollama"</span>       <span class="code-comment"># or "openai", "groq"</span>
+  <span class="code-key">base_url</span>: <span class="code-string">"http://ollama:11434/v1"</span>
+  <span class="code-key">model</span>: <span class="code-string">"llama3.1"</span>
+  <span class="code-key">api_key</span>: <span class="code-string">"ollama"</span>       <span class="code-comment"># real key for cloud</span></code></pre>
+          </div>
+          <p class="ai-note">AI answers are optional. When disabled or unavailable, search results still return normally
+            with <code>answer: null</code>. Graceful degradation, always.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== QUICKSTART CTA ====== -->
+  <section class="quickstart-cta" id="quickstart">
+    <div class="section-inner">
+      <h2>Deploy in 30 seconds.</h2>
+      <p class="section-sub">Seriously. One command.</p>
+      <div class="qs-terminal">
+        <div class="terminal-chrome">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <div class="terminal-body">
+          <div class="terminal-line">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cmd">git clone https://github.com/vkfolio/orio-search && cd oriosearch</span>
+          </div>
+          <div class="terminal-line">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cmd">docker compose up --build</span>
+          </div>
+          <div class="terminal-line terminal-success">
+            <span>&#10003;</span> orio-search-redis started
+          </div>
+          <div class="terminal-line terminal-success">
+            <span>&#10003;</span> orio-search-searxng started
+          </div>
+          <div class="terminal-line terminal-success">
+            <span>&#10003;</span> orio-search-api started
+          </div>
+          <div class="terminal-line" style="margin-top: 8px;">
+            <span class="terminal-prompt">$</span>
+            <span class="terminal-cmd">curl http://localhost:8000/health</span>
+          </div>
+          <div class="terminal-line terminal-json">
+            {"status": "ok", "service": "orio-search"}
+          </div>
+        </div>
+      </div>
+      <div class="qs-actions">
+        <a href="https://github.com/vkfolio/orio-search" class="btn btn-primary btn-lg" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          Star on GitHub
+        </a>
+        <a href="https://github.com/vkfolio/orio-search#readme" class="btn btn-outline btn-lg" target="_blank"
+          rel="noopener">
+          Read the Docs
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <span class="logo-icon">&#9678;</span> OrioSearch
+      </div>
+      <p>Open-source web search API. Built with FastAPI, SearXNG, and Redis.</p>
+      <div class="footer-links">
+        <a href="https://github.com/vkfolio/orio-search" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/vkfolio/orio-search#readme" target="_blank" rel="noopener">Docs</a>
+        <a href="https://github.com/vkfolio/orio-search/issues" target="_blank" rel="noopener">Issues</a>
+      </div>
+      <p class="footer-license">MIT License</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
