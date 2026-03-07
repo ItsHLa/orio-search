@@ -23,6 +23,7 @@ Built on **SearXNG** (meta-search) + **FastAPI** with async concurrency, Redis c
 
 - **Tavily-compatible API** — `/search`, `/extract`, and `/tool-schema` endpoints match Tavily's interface
 - **AI answer generation** — `include_answer: true` generates LLM-synthesized answers from search results (OpenAI, Ollama, Groq, or any OpenAI-compatible API)
+- **Image search** — `include_images: true` returns image results alongside web results via parallel search (no extra latency)
 - **LLM-ready** — `/tool-schema` returns OpenAI function-calling definitions for `web_search` and `web_extract`
 - **SearXNG backend** — aggregates 70+ search engines with automatic fallback to DuckDuckGo
 - **Content extraction** — multi-tier pipeline: trafilatura (F1: 0.958) with readability-lxml fallback
