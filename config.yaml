@@ -3,10 +3,10 @@ server:
   port: 8000
 
 search:
-  backend: "searxng"  # "searxng" | "duckduckgo"
-  searxng_url: "http://searxng:8080"
-  google_api_key: ""
-  google_cx: ""
+  backend: "duckduckgo"  # "searxng" | "duckduckgo"
+  # searxng_url: "http://searxng:8080"
+  # google_api_key: ""
+  # google_cx: ""
 
 extraction:
   max_concurrent: 5
